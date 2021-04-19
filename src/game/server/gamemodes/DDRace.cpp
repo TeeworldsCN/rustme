@@ -10,7 +10,7 @@
 #include <game/server/player.h>
 
 CGameControllerDDRace::CGameControllerDDRace(class CGameContext *pGameServer) :
-	IGameController(pGameServer), m_Teams(pGameServer), m_pInitResult(nullptr)
+	IGameController(pGameServer), m_Teams(pGameServer) //, m_pInitResult(nullptr)
 {
 	m_pGameType = g_Config.m_SvTestingCommands ? TEST_NAME : GAME_NAME;
 
@@ -53,63 +53,63 @@ void CGameControllerDDRace::HandleCharacterTiles(CCharacter *pChr, int MapIndex)
 	int FTile4 = GameServer()->Collision()->GetFTileIndex(S4);
 
 	const int PlayerDDRaceState = pChr->m_DDRaceState;
-	// start
-	if(((m_TileIndex == TILE_START) || (m_TileFIndex == TILE_START) || FTile1 == TILE_START || FTile2 == TILE_START || FTile3 == TILE_START || FTile4 == TILE_START || Tile1 == TILE_START || Tile2 == TILE_START || Tile3 == TILE_START || Tile4 == TILE_START) && (PlayerDDRaceState == DDRACE_NONE || PlayerDDRaceState == DDRACE_FINISHED || (PlayerDDRaceState == DDRACE_STARTED && !GetPlayerTeam(ClientID) && g_Config.m_SvTeam != 3)))
-	{
-		if(m_Teams.GetSaving(GetPlayerTeam(ClientID)))
-		{
-			if(pChr->m_LastStartWarning < Server()->Tick() - 3 * Server()->TickSpeed())
-			{
-				GameServer()->SendChatTarget(ClientID, "You can't start while loading/saving of team is in progress");
-				pChr->m_LastStartWarning = Server()->Tick();
-			}
-			pChr->Die(ClientID, WEAPON_WORLD);
-			return;
-		}
-		if(g_Config.m_SvTeam == 2 && (GetPlayerTeam(ClientID) == TEAM_FLOCK || m_Teams.Count(GetPlayerTeam(ClientID)) <= 1))
-		{
-			if(pChr->m_LastStartWarning < Server()->Tick() - 3 * Server()->TickSpeed())
-			{
-				GameServer()->SendChatTarget(ClientID, "You have to be in a team with other tees to start");
-				pChr->m_LastStartWarning = Server()->Tick();
-			}
-			pChr->Die(ClientID, WEAPON_WORLD);
-			return;
-		}
-		if(g_Config.m_SvResetPickups)
-		{
-			pChr->ResetPickups();
-		}
+	// // start
+	// if(((m_TileIndex == TILE_START) || (m_TileFIndex == TILE_START) || FTile1 == TILE_START || FTile2 == TILE_START || FTile3 == TILE_START || FTile4 == TILE_START || Tile1 == TILE_START || Tile2 == TILE_START || Tile3 == TILE_START || Tile4 == TILE_START) && (PlayerDDRaceState == DDRACE_NONE || PlayerDDRaceState == DDRACE_FINISHED || (PlayerDDRaceState == DDRACE_STARTED && !GetPlayerTeam(ClientID) && g_Config.m_SvTeam != 3)))
+	// {
+	// 	if(m_Teams.GetSaving(GetPlayerTeam(ClientID)))
+	// 	{
+	// 		if(pChr->m_LastStartWarning < Server()->Tick() - 3 * Server()->TickSpeed())
+	// 		{
+	// 			GameServer()->SendChatTarget(ClientID, "You can't start while loading/saving of team is in progress");
+	// 			pChr->m_LastStartWarning = Server()->Tick();
+	// 		}
+	// 		pChr->Die(ClientID, WEAPON_WORLD);
+	// 		return;
+	// 	}
+	// 	if(g_Config.m_SvTeam == 2 && (GetPlayerTeam(ClientID) == TEAM_FLOCK || m_Teams.Count(GetPlayerTeam(ClientID)) <= 1))
+	// 	{
+	// 		if(pChr->m_LastStartWarning < Server()->Tick() - 3 * Server()->TickSpeed())
+	// 		{
+	// 			GameServer()->SendChatTarget(ClientID, "You have to be in a team with other tees to start");
+	// 			pChr->m_LastStartWarning = Server()->Tick();
+	// 		}
+	// 		pChr->Die(ClientID, WEAPON_WORLD);
+	// 		return;
+	// 	}
+	// 	if(g_Config.m_SvResetPickups)
+	// 	{
+	// 		pChr->ResetPickups();
+	// 	}
 
-		m_Teams.OnCharacterStart(ClientID);
-		pChr->m_CpActive = -2;
-	}
+	// 	m_Teams.OnCharacterStart(ClientID);
+	// 	pChr->m_CpActive = -2;
+	// }
 
-	// finish
-	if(((m_TileIndex == TILE_FINISH) || (m_TileFIndex == TILE_FINISH) || FTile1 == TILE_FINISH || FTile2 == TILE_FINISH || FTile3 == TILE_FINISH || FTile4 == TILE_FINISH || Tile1 == TILE_FINISH || Tile2 == TILE_FINISH || Tile3 == TILE_FINISH || Tile4 == TILE_FINISH) && PlayerDDRaceState == DDRACE_STARTED)
-		m_Teams.OnCharacterFinish(ClientID);
+	// // finish
+	// if(((m_TileIndex == TILE_FINISH) || (m_TileFIndex == TILE_FINISH) || FTile1 == TILE_FINISH || FTile2 == TILE_FINISH || FTile3 == TILE_FINISH || FTile4 == TILE_FINISH || Tile1 == TILE_FINISH || Tile2 == TILE_FINISH || Tile3 == TILE_FINISH || Tile4 == TILE_FINISH) && PlayerDDRaceState == DDRACE_STARTED)
+	// 	m_Teams.OnCharacterFinish(ClientID);
 
-	// unlock team
-	else if(((m_TileIndex == TILE_UNLOCK_TEAM) || (m_TileFIndex == TILE_UNLOCK_TEAM)) && m_Teams.TeamLocked(GetPlayerTeam(ClientID)))
-	{
-		m_Teams.SetTeamLock(GetPlayerTeam(ClientID), false);
+	// // unlock team
+	// else if(((m_TileIndex == TILE_UNLOCK_TEAM) || (m_TileFIndex == TILE_UNLOCK_TEAM)) && m_Teams.TeamLocked(GetPlayerTeam(ClientID)))
+	// {
+	// 	m_Teams.SetTeamLock(GetPlayerTeam(ClientID), false);
 
-		for(int i = 0; i < MAX_CLIENTS; i++)
-			if(GetPlayerTeam(i) == GetPlayerTeam(ClientID))
-				GameServer()->SendChatTarget(i, "Your team was unlocked by an unlock team tile");
-	}
+	// 	for(int i = 0; i < MAX_CLIENTS; i++)
+	// 		if(GetPlayerTeam(i) == GetPlayerTeam(ClientID))
+	// 			GameServer()->SendChatTarget(i, "Your team was unlocked by an unlock team tile");
+	// }
 
-	// solo part
-	if(((m_TileIndex == TILE_SOLO_ENABLE) || (m_TileFIndex == TILE_SOLO_ENABLE)) && !m_Teams.m_Core.GetSolo(ClientID))
-	{
-		GameServer()->SendChatTarget(ClientID, "You are now in a solo part");
-		pChr->SetSolo(true);
-	}
-	else if(((m_TileIndex == TILE_SOLO_DISABLE) || (m_TileFIndex == TILE_SOLO_DISABLE)) && m_Teams.m_Core.GetSolo(ClientID))
-	{
-		GameServer()->SendChatTarget(ClientID, "You are now out of the solo part");
-		pChr->SetSolo(false);
-	}
+	// // solo part
+	// if(((m_TileIndex == TILE_SOLO_ENABLE) || (m_TileFIndex == TILE_SOLO_ENABLE)) && !m_Teams.m_Core.GetSolo(ClientID))
+	// {
+	// 	GameServer()->SendChatTarget(ClientID, "You are now in a solo part");
+	// 	pChr->SetSolo(true);
+	// }
+	// else if(((m_TileIndex == TILE_SOLO_DISABLE) || (m_TileFIndex == TILE_SOLO_DISABLE)) && m_Teams.m_Core.GetSolo(ClientID))
+	// {
+	// 	GameServer()->SendChatTarget(ClientID, "You are now out of the solo part");
+	// 	pChr->SetSolo(false);
+	// }
 }
 
 void CGameControllerDDRace::OnPlayerDisconnect(CPlayer *pPlayer, const char *pReason)
@@ -129,16 +129,16 @@ void CGameControllerDDRace::OnPlayerDisconnect(CPlayer *pPlayer, const char *pRe
 void CGameControllerDDRace::Tick()
 {
 	IGameController::Tick();
-	m_Teams.ProcessSaveTeam();
+	// m_Teams.ProcessSaveTeam();
 
-	if(m_pInitResult != nullptr && m_pInitResult->m_Completed)
-	{
-		if(m_pInitResult->m_Success)
-		{
-			m_CurrentRecord = m_pInitResult->m_CurrentRecord;
-		}
-		m_pInitResult = nullptr;
-	}
+	// if(m_pInitResult != nullptr && m_pInitResult->m_Completed)
+	// {
+	// 	if(m_pInitResult->m_Success)
+	// 	{
+	// 		m_CurrentRecord = m_pInitResult->m_CurrentRecord;
+	// 	}
+	// 	m_pInitResult = nullptr;
+	// }
 }
 
 void CGameControllerDDRace::DoTeamChange(class CPlayer *pPlayer, int Team, bool DoChatMsg)
@@ -157,7 +157,7 @@ void CGameControllerDDRace::DoTeamChange(class CPlayer *pPlayer, int Team, bool 
 			// check if the team finished by you leaving it.
 			int DDRTeam = pCharacter->Team();
 			m_Teams.SetForceCharacterTeam(pPlayer->GetCID(), TEAM_FLOCK);
-			m_Teams.CheckTeamFinished(DDRTeam);
+			// m_Teams.CheckTeamFinished(DDRTeam);
 		}
 	}
 
